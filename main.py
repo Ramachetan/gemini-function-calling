@@ -92,7 +92,7 @@ if prompt := st.chat_input("Ask me about information in the database..."):
                     location = params["location"]
                     lat = params["latitude"]
                     lon = params["longitude"]
-                    api_key = "331c56e4ed9c49dbb2f1779cfa64ffd2"
+                    api_key = "API_KEY" # replace with your own API key
                     # api_response = f"The Weather is 40° F in {location}"
                     # api_requests_and_responses.append(
                     #     [response.function_call.name, params, api_response]
