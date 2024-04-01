@@ -5,7 +5,10 @@ import streamlit as st
 import time
 from vertexai.generative_models import FunctionDeclaration, GenerativeModel, Part, Tool
 import requests
-import re
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 st.set_page_config(
     page_title="API Flow Weaver",
@@ -92,7 +95,7 @@ if prompt := st.chat_input("Ask me about information in the database..."):
                     location = params["location"]
                     lat = params["latitude"]
                     lon = params["longitude"]
-                    api_key = "API_KEY" # replace with your own API key
+                    api_key = os.getenv("WEATHER_API_KEY")
                     # api_response = f"The Weather is 40° F in {location}"
                     # api_requests_and_responses.append(
                     #     [response.function_call.name, params, api_response]
