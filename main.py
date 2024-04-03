@@ -1,6 +1,5 @@
 import time
 import chainlit as cl
-from google.cloud import bigquery
 from vertexai.generative_models import FunctionDeclaration, GenerativeModel, Part, Tool
 from dotenv import load_dotenv
 import os
