@@ -1,0 +1,71 @@
+a[href*='https://github.com/Chainlit/chainlit'] {
+  visibility: hidden;
+}
+
+a img[alt="watermark"] {
+  display: none;
+  }
+
+a img[alt="logo"] {
+    max-height: 150px !important;
+}
+
+.MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.css-k97ojw {
+  background-color: #000000 !important; /* Replace with your preferred color */
+}
+
+
+.MuiBox-root .css-n8izsi {
+  background-color: white;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.css-vubbuv {
+  color: #00aae7;
+}
+
+.MuiButton-root.css-1vhtqje {
+  color: white !important;
+  background-color: #00aae7 !important;
+  /* Other CSS properties if needed */
+}
+
+
+.MuiButton-root.css-1ruedog {
+  color: #00aae7 !important;
+  border-color: #00aae7 !important;
+  /* Other CSS properties if needed */
+}
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiAvatar-fallback.css-13y7ul3 {
+  fill: #00aae7 !important;
+  /* Other CSS properties if needed */
+}
+
+.MuiStack-root.css-1705j0v {
+  background-color: rgb(255, 255, 255) !important;
+}
+
+/* Make the text white (optional, since the background is already white) */
+.MuiStack-root.css-1705j0v .MuiTypography-root.MuiTypography-body1.css-pcmo6i {
+  color: white !important;
+}
+
+/* If you still want to keep the image white or overlay it with white */
+.MuiStack-root.css-1705j0v img {
+  filter: brightness(0) invert(1) !important;
+  height: 10px;
+}
+
+
+
+
+.markdown-body img {
+  width: 65%; /* adjust as needed */
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+
+a[href*='https://github.com/Chainlit/chainlit'] {
+  visibility: hidden;
+}

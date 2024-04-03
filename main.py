@@ -1,74 +1,149 @@
 import time
-from tools import tools
+import chainlit as cl
 from google.cloud import bigquery
-import streamlit as st
-import time
 from vertexai.generative_models import FunctionDeclaration, GenerativeModel, Part, Tool
-import requests
-import os
 from dotenv import load_dotenv
+import os
+import requests
+import time
+
 
 load_dotenv()
 
-st.set_page_config(
-    page_title="API Flow Weaver",
-    page_icon=":bar_chart:",
-    layout="wide",
+api_key = os.getenv("WEATHER_API_KEY")
+google_search_api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
+google_cx = os.getenv("GOOGLE_CX")
+
+@cl.password_auth_callback
+def auth_callback(username: str, password: str):
+    if username == "admin" and password == "admin":
+        return cl.User(
+            identifier="admin", metadata={"role": "admin", "provider": "credentials"}
+        )
+    else:
+        return None 
+
+@cl.step
+async def google_search(query: str):
+    response = requests.get(f"https://www.googleapis.com/customsearch/v1?key={google_search_api_key}&cx={google_cx}&q={query}")
+    response_json = response.json()
+    api_response = f"Query: {query}\nSearch Results:\n"
+    if 'items' in response_json:
+        for item in response_json['items']:
+            title = item.get('title', 'No title available')
+            link = item.get('link', 'No link available')
+            snippet = item.get('snippet', 'No snippet available')
+            print(f"Title: {title}\nLink: {link}\nSnippet: {snippet}\n")
+            api_response += f"Title: {title}\nLink: {link}\nSnippet: {snippet}\n"
+    else:
+        print("No search results found.")
+    return api_response
+    
+
+@cl.step
+async def get_current_weather(location: str, lat: float, lon: float):
+    response = requests.get(f"https://api.weatherbit.io/v2.0/current?lat={lat}&lon={lon}&key={api_key}&include=minutely")
+    response = response.json()
+    api_response = "The current weather in " + location + " is " + response["data"][0]["weather"]["description"] + " with a temperature of " + str(response["data"][0]["temp"]) + "°C."
+    return api_response
+
+@cl.step
+async def get_current_time(time_zone: str):
+    response = requests.get(f"http://worldtimeapi.org/api/timezone/{time_zone}")
+    response = response.json()
+    print(response)
+    api_response = "The current time in " + time_zone + " is " + response["datetime"] + "Today's date is" + response["datetime"]
+    return api_response
+
+google_search_func = FunctionDeclaration(
+    name="google_search",
+    description="Get search results from Google based on a query. Use this tool whenever you don't know the answer to a question or unsure about a topic.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Refined search query to get the most accurate results.",
+            },
+        },
+        "required": ["query"],
+    },
 )
 
+get_current_weather_func = FunctionDeclaration(
+    name="get_current_weather",
+    description="Get the current weather in a given location. Use your knowledge of latitude and longitude to get the weather for a location.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "The location to get the weather for. For example, 'New York, NY' or 'London, UK'",
+            },
+            "latitude": {
+                "type": "number",
+                "description": "The latitude of the location to get the weather for",
+            },
+            "longitude": {
+                "type": "number",
+                "description": "The longitude of the location to get the weather for",
+            },
+            
+        },
+        "required": ["location", "latitude", "longitude"],
+    },
+    
+    )
+
+get_current_time_func = FunctionDeclaration(
+    name="get_current_time",
+    description="Get the current time and date in a given time zone. Use this tool before googling questions that are time sensitive.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "time_zone": {
+                "type": "string",
+                "description": "The time zone to get the time for. For example, 'America/New_York' or 'Europe/London'",
+            },
+        },
+        "required": ["time_zone"],
+    },
+        
+    )
+
+sql_query_tool = Tool(
+    function_declarations=[
+        google_search_func,
+        get_current_weather_func,
+        get_current_time_func,
+    ],
+)
 
 model = GenerativeModel(
     "gemini-1.0-pro",
     generation_config={"temperature": 0},
-    tools=tools(),
-    )
+    tools=[sql_query_tool],
+)
 
+@cl.on_chat_start
+async def start():
+    await cl.Avatar(
+        name="Gemini",
+        url="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg",
+    ).send()
 
-col1, col2 = st.columns([7, 1])
-with col1:
-    st.title("API Flow Weaver")
-with col2:
-    st.image("gcp.png", width=200)
-
-st.subheader("Powered by Function Calling in Gemini")
-
-
-with st.expander("Sample prompts", expanded=True):
-    st.write(
-        """
-        - What is the current weather in New York?
-        - What is the current time in London?
-        - What is the current weather in London?
-        - What is the current time in New York?
-    """
-    )
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"].replace("$", "\$"))  # noqa: W605
-        try:
-            with st.expander("Function calls, parameters, and responses"):
-                st.markdown(message["backend_details"])
-        except KeyError:
-            pass
-
-if prompt := st.chat_input("Ask me about information in the database..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
+@cl.on_message
+async def main(message: cl.Message):
+    
         full_response = ""
         chat = model.start_chat()
-        client = bigquery.Client()
-
-        prompt += """
-            If the above question does not contain the information you are looking for, ask me again with more details. If it is a weather releated question, and the question does not provide the latitude and longitude, use your rough knowledge of the location to provide the latitude and longitude. For example, the latitude and longitude of New York is 40.7128 and -74.0060 respectively.
         
+        prompt = "User Question: "+ message.content + "\n"
+        
+        prompt += """
+            You are Gemini, a large language model trained by Google. Knowledge cutoff: 2023-04 Current date: 2024-03-04
+            
+            You have the tool `google search`. Use `google search` in the following circumstances: - User is asking about current events or something that requires real-time information (weather, sports scores, etc.) - User is asking about some term you are totally unfamiliar with (it might be new) - User explicitly asks you to browse the web for information. Note: The more specific the query, the more accurate the results. For example, if user asks 'When does Google Next Happen?' the query should be 'Google Next 2024 date'. ALWAYS refine the user question to get the most accurate results, NEVER use the user question as is. If you are unsatisfied with the original results retry with a better query. Think Step by Step: 1. Understand the user question 2. Refine the query 3. Get the search results 4. Summarize the search results in a concise manner.
             """
 
         response = chat.send_message(prompt)
@@ -88,32 +163,29 @@ if prompt := st.chat_input("Ask me about information in the database..."):
 
                 print(response.function_call.name)
                 print(params)
-                
-                #https://api.weatherbit.io/v2.0/current?lat=35.7796&lon=-78.6382&key=API_KEY&include=minutely
 
                 if response.function_call.name == "get_current_weather":
                     location = params["location"]
                     lat = params["latitude"]
                     lon = params["longitude"]
-                    api_key = os.getenv("WEATHER_API_KEY")
-                    # api_response = f"The Weather is 40° F in {location}"
-                    # api_requests_and_responses.append(
-                    #     [response.function_call.name, params, api_response]
-                    # )
-                    api_response = requests.get(f"https://api.weatherbit.io/v2.0/current?lat={lat}&lon={lon}&key={api_key}&include=minutely")
-                    api_response = api_response.json()
+                    api_response = await get_current_weather(location, lat, lon)
                     api_requests_and_responses.append(
                         [response.function_call.name, params, api_response]
                     )
 
-                if response.function_call.name == "get_time":
+                if response.function_call.name == "google_search":
+                    api_response = await google_search(params["query"])
+                    api_requests_and_responses.append(
+                        [response.function_call.name, params, api_response]
+                    )
+                    
+                if response.function_call.name == "get_current_time":
                     time_zone = params["time_zone"]
-                    api_response = requests.get(f"http://worldtimeapi.org/api/timezone/{time_zone}")
-                    api_response = api_response.json()["datetime"]
+                    api_response = await get_current_time(time_zone)
                     api_requests_and_responses.append(
                         [response.function_call.name, params, api_response]
                     )
-
+                
 
                 print(api_response)
 
@@ -146,24 +218,20 @@ if prompt := st.chat_input("Ask me about information in the database..."):
                     + "```"
                 )
                 backend_details += "\n\n"
-                with message_placeholder.container():
-                    st.markdown(backend_details)
+                # with message_placeholder.container():
+                #     st.markdown(backend_details)
 
             except AttributeError:
                 function_calling_in_process = False
 
         time.sleep(3)
-        print(response)
-        full_response = response.text
-        with message_placeholder.container():
-            st.markdown(full_response.replace("$", "\$"))  # noqa: W605
-            with st.expander("Function calls, parameters, and responses:"):
-                st.markdown(backend_details)
+        text_content = backend_details
+        # elements = [
+        #     cl.Text(name="Function Call Process", content=text_content, display="inline")
+        # ]
 
-        st.session_state.messages.append(
-            {
-                "role": "assistant",
-                "content": full_response,
-                "backend_details": backend_details,
-            }
-        )
+        full_response = response.text
+        await cl.Message(
+            content=full_response,
+            author="Gemini",
+        ).send()
