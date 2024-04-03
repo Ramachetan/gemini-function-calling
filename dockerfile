@@ -8,5 +8,5 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY . .
 
-CMD ["chainlit", "run", "chainlit.py", "--port", "8000"]
+CMD ["chainlit", "run", "main.py", "--port", "8000"]
 
