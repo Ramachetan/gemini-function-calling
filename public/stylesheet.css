@@ -7,7 +7,7 @@ a img[alt="watermark"] {
   }
 
 a img[alt="logo"] {
-    max-height: 150px !important;
+    max-height: 200px !important;
 }
 
 .MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.css-k97ojw {
@@ -59,12 +59,26 @@ a img[alt="logo"] {
 
 
 .markdown-body img {
-  width: 65%; /* adjust as needed */
+  width: 50%; 
   height: auto;
   display: block;
   margin: 0 auto;
 }
 
+.markdown-body p {
+  text-align: justify;
+
+}
+
+.markdown-body h1 {
+  color: #00aae7;
+  text-align: center;
+}
+
+.markdown-body h2 {
+  color: #00aae7;
+}
+  
 
 a[href*='https://github.com/Chainlit/chainlit'] {
   visibility: hidden;

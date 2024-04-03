@@ -136,12 +136,13 @@ async def start():
 async def main(message: cl.Message):
     
         full_response = ""
-        chat = model.start_chat()
+        current_date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        chat = model.start_chat(response_validation=False)
         
         prompt = "User Question: "+ message.content + "\n"
         
-        prompt += """
-            You are Gemini, a large language model trained by Google. Knowledge cutoff: 2023-04 Current date: 2024-03-04
+        prompt += f"""
+            You are Gemini, a large language model trained by Google. Current date: {current_date}
             
             You have the tool `google search`. Use `google search` in the following circumstances: - User is asking about current events or something that requires real-time information (weather, sports scores, etc.) - User is asking about some term you are totally unfamiliar with (it might be new) - User explicitly asks you to browse the web for information. Note: The more specific the query, the more accurate the results. For example, if user asks 'When does Google Next Happen?' the query should be 'Google Next 2024 date'. ALWAYS refine the user question to get the most accurate results, NEVER use the user question as is. If you are unsatisfied with the original results retry with a better query. Think Step by Step: 1. Understand the user question 2. Refine the query 3. Get the search results 4. Summarize the search results in a concise manner.
             """
