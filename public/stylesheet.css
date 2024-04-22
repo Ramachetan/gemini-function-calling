@@ -7,7 +7,8 @@ a img[alt="watermark"] {
   }
 
 a img[alt="logo"] {
-    max-height: 200px !important;
+    max-height: 200px;
+
 }
 
 .MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.css-k97ojw {
@@ -24,15 +25,16 @@ a img[alt="logo"] {
 }
 
 .MuiButton-root.css-1vhtqje {
-  color: white !important;
-  background-color: #00aae7 !important;
+  color: #00aae7 !important;
+  background-color: #ffffff !important;
+  outline: 2px solid #00aae7 !important;
   /* Other CSS properties if needed */
 }
 
 
 .MuiButton-root.css-1ruedog {
   color: #00aae7 !important;
-  border-color: #00aae7 !important;
+  border-color: #00aae7 !important; 
   /* Other CSS properties if needed */
 }
 .MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiAvatar-fallback.css-13y7ul3 {
@@ -65,10 +67,12 @@ a img[alt="logo"] {
   margin: 0 auto;
 }
 
-.markdown-body p {
-  text-align: justify;
-
+#welcome-screen .markdown-body p {
+  text-align: center;
+  font-size: 20px;
+  color:   #2368a0;
 }
+
 
 .markdown-body h1 {
   color: #00aae7;
@@ -76,10 +80,11 @@ a img[alt="logo"] {
 }
 
 .markdown-body h2 {
-  color: #00aae7;
+  color:  #2368a0;
 }
   
 
 a[href*='https://github.com/Chainlit/chainlit'] {
   visibility: hidden;
 }
+
