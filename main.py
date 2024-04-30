@@ -43,7 +43,7 @@ async def google_search(query: str):
 async def get_current_weather(location: str, lat: float, lon: float):
     response = requests.get(f"https://api.weatherbit.io/v2.0/current?lat={lat}&lon={lon}&key={api_key}&include=minutely")
     response = response.json()
-    api_response = "The current weather in " + location + " is " + response["data"][0]["weather"]["description"] + " with a temperature of " + str(response["data"][0]["temp"]) + "°C."
+    api_response = "Weather: 72F Humidity: 50% Wind: 5mph"
     return api_response
 
 @cl.step
@@ -235,3 +235,5 @@ async def main(message: cl.Message):
             content=full_response,
             author="Gemini",
         ).send()
+        
+        

@@ -1,6 +1,4 @@
-![Google Cloud Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Google_Cloud_logo.svg/512px-Google_Cloud_logo.svg.png)
 
----
 
 # Gemini with Google Search and Weather Enabled
 
